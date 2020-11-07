@@ -9,6 +9,8 @@ from gensim.models import Phrases
 from nltk.tokenize import sent_tokenize, word_tokenize
 from utils import initialise_logger, multicore_apply
 
+pd.set_option('display.max_columns', None)
+
 
 def extract_words(text):
     text = text.lower()
@@ -33,7 +35,11 @@ def phrase_model(lines, min_count, threshold, phrase_length):
     return lines
 
 
-def create_sentences(sentences, min_count, phrase_length):
+def count_maori_words(text):
+    return sum(1 if is_maori(word, strict=True) else 0 for word in text)
+
+
+def create_sentences(sentences, min_count, phrase_length, maori_min_percentage, sentence_min_length):
 
     logger.info('Split paragraphs into sentences..')
     sentences['sentence'] = multicore_apply(sentences.paragraph, sent_tokenize, front_num=3)
@@ -56,6 +62,12 @@ def create_sentences(sentences, min_count, phrase_length):
 
     logger.info('Split sentences into words..')
     sentences['words'] = multicore_apply(sentences.sentence, extract_words, front_num=3)
+    sentences['maori_word_count'] = multicore_apply(sentences.words, count_maori_words)
+    sentences['non_maori_word_count'] = sentences.words.apply(len) - sentences.maori_word_count
+    sentences['maori_word_percentage'] = sentences.maori_word_count / sentences.words.apply(len)
+
+    logger.info("Dropping sentences below {:.1f}% māori words and shorter than {} words".format(maori_min_percentage * 100, sentence_min_length))
+    sentences = sentences.loc[(sentences.maori_word_percentage > maori_min_percentage) & (sentences.words.apply(len) >= sentence_min_length), :]
 
     maori_words  = set(word for word in
         sentences.loc[sentences.words.apply(len) > 0, 'words']
@@ -102,14 +114,16 @@ def create_sentences(sentences, min_count, phrase_length):
 @click.option('--sentences_csv', help='Path to sentences.csv')
 @click.option('--min_count', type=int, help='Path to sentences.csv')
 @click.option('--phrase_length', type=int, help='Max phrase length')
+@click.option('--maori_min_percentage', default=0.5, type=float, help='Minimum percentage of māori words in a given sentence')
+@click.option('--sentence_min_length', default=3, type=int, help='Minimum sentence length')
 @click.option('--log_level', default='INFO', help='Log level (default: INFO)')
-def main(paragraphs_csv, sentences_csv, min_count, phrase_length, log_level):
+def main(paragraphs_csv, sentences_csv, min_count, phrase_length, maori_min_percentage, sentence_min_length, log_level):
 
     global logger
     logger = initialise_logger(log_level, __file__)
 
     paragraphs = pd.read_csv(paragraphs_csv)
-    sentences = create_sentences(paragraphs, min_count, phrase_length)
+    sentences = create_sentences(paragraphs, min_count, phrase_length, maori_min_percentage, sentence_min_length)
 
     logger.info('Save sentences to {}'.format(sentences_csv))
     sentences.to_csv(sentences_csv, index = False)
