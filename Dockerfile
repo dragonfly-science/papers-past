@@ -25,6 +25,11 @@ RUN curl -sL https://deb.nodesource.com/setup_15.x  | bash -
 RUN apt-get -y install nodejs
 RUN npm install
 
+# Install infomap
+COPY submodules/infomap /code/submodules/infomap
+WORKDIR /code/submodules/infomap
+RUN make && cp Infomap /usr/bin
+
 # RUN apt update && apt install -y llvm-10-dev
 RUN python3 -m pip install --upgrade pip
 COPY requirements.txt /root/requirements.txt
