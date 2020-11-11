@@ -29,5 +29,6 @@ def main(sentence_csv, corpus_file, log_level):
         for line in sentences.loc[sentences.phrase.str.len() > 0, 'phrase']:
             f.write(line + '\n')
 
+
 if __name__ == '__main__':
     main()
