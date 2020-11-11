@@ -20,9 +20,12 @@ PHRASE_LENGTH ?= 4
 .PHONY: starmap wordmap crawl shiny r_session jupyter ipython clean docker \
 	docker-push docker-pull enter enter-root
 
-.PRECIOUS: data/te_ara/corpus.txt data/te_ara/corpus.shuf data/te_ara/umap.csv data/te_ara/corpus.train data/te_ara/corpus.test data/te_ara/sentences.csv data/te_ara/fasttext_cbow.bin data/te_ara/word_counts.txt data/papers/corpus.txt data/papers/corpus.shuf data/papers/umap.csv data/papers/corpus.train data/papers/corpus.test data/papers/sentences.csv data/papers/fasttext_cbow.bin data/papers/word_counts.txt
+.PRECIOUS: $(addprefix data/,$(addsuffix /network.txt,$(CORPUS_NAME))) \
+	$(addprefix data/,$(addsuffix /word_counts.txt,$(CORPUS_NAME)))
 
-all: $(addprefix starmap/,$(addsuffix .json,$(CORPUS_NAME)))
+all: $(addprefix starmap/,$(addsuffix .json,$(CORPUS_NAME))) \
+	$(addprefix data/,$(addsuffix /network.clu,$(CORPUS_NAME))) \
+	$(addprefix data/,$(addsuffix /poincare.model,$(CORPUS_NAME)))
 
 crawl: data/papers/newspapers.json
 data/papers/newspapers.json:
@@ -71,13 +74,28 @@ data/%/corpus.txt: embeddings/create_corpus.py data/%/sentences.csv
 		--log_level $(LOG_LEVEL)
 
 MAX_N ?= 6
-AUTOTUNE_DURATION ?= 30
 data/%/fasttext_cbow.bin: data/%/corpus.txt
 	$(RUN) fasttext cbow -input $< -output $(basename $@) -minCount $(MIN_COUNT) \
 		-thread $(NUM_CORES) -maxn $(MAX_N)
 
 data/%/word_counts.txt: data/%/corpus.txt
 	$(RUN) cat $< | grep -oE '[a-zāēīōū_]+' | sort | uniq -c | sort -nr | awk '($$1 >= $(MIN_COUNT))' > $@
+
+THRESHOLD ?= 99.9
+data/%/network.txt: embeddings/create_network.py data/%/fasttext_cbow.bin
+	$(RUN) python3 $< --word_vectors data/$*/fasttext_cbow.vec --network_file $@ --threshold $(THRESHOLD) --log_level $(LOG_LEVEL)
+
+EPOCHS ?= 50
+data/%/poincare.model: embeddings/create_poincare_embeddings.py data/%/network.txt data/%/word_counts.txt
+	$(RUN) python3 $< \
+		--network_tsv data/$*/network.txt \
+		--word_counts data/$*/word_counts.txt \
+		--output $@ \
+		--epochs $(EPOCHS) \
+		--log_level $(LOG_LEVEL)
+
+data/%/network.clu: data/%/network.txt
+	$(RUN) Infomap --clu --tree -f undirected $< data/$*
 
 N_NEIGHBOURS ?= 8
 MIN_DIST ?= 0.8

@@ -1,3 +1,4 @@
+
 import click
 import numpy as np
 import pandas as pd
@@ -13,9 +14,24 @@ def load_network(network_tsv):
         output = []
         for line in f.read().strip().split("\n"):
             x, y, w = line.split()
+            x = int(x)
+            y = int(y)
             output.append(tuple([x, y]))
             output.append(tuple([y, x]))
         return output
+
+
+def load_word_counts(word_counts_file):
+    word_counts = []
+    with open(word_counts_file, 'r') as f:
+        for line in f.read().strip().split('\n'):
+            count, word = line.strip().split()
+            count = int(count)
+            word_counts.append({
+                'word': word,
+                'count': count
+            })
+    return word_counts
 
 
 @click.command()
@@ -30,9 +46,17 @@ def main(network_tsv, word_counts, output, epochs, log_level):
     logger = initialise_logger(log_level, __file__)
 
     logger.info('Loading network from {}'.format(network_tsv))
-    relations = load_network(network_tsv)
-    logger.info('First 5 relations: {}'.format(relations[:5]))
+    network = load_network(network_tsv)
+    logger.info('First 5 relations: {}'.format(network[:5]))
 
+    logger.info('Getting word counts from {}'.format(word_counts))
+    word_counts = load_word_counts(word_counts)
+
+    relations = [
+        (word_counts[x]['word'], word_counts[y]['word']) \
+        for x, y in network
+    ]
+    
     model = PoincareModel(relations, size=2, negative=2)
 
     logger.info("Training poincaré model...")

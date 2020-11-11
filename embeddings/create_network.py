@@ -31,7 +31,7 @@ def create_word_counts(word_counts):
     with open(word_counts, 'r') as f:
         for line in f.read().strip().split('\n'):
             count, word = line.strip().split()
-            result.append({'word': word, 'count': int(count)})
+            result.append({'word': int(word), 'count': int(count)})
 
     return pd.DataFrame.from_dict(result)
 
@@ -67,7 +67,7 @@ def main(word_vectors, network_file, threshold, log_level):
         xs, ys = np.where(similarity_matrix > 0)
         logger.info("Writing {} edges to {}".format(len(xs), network_file))
         for x, y in zip(xs, ys):
-            f.write("{} {} {}\n".format(vector_data.loc[x, 'word'], vector_data.loc[y, 'word'], similarity_matrix[x,y]))
+            f.write("{} {} {}\n".format(x, y, similarity_matrix[x,y]))
 
     logger.info('Done!')
 
