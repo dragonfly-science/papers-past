@@ -18,6 +18,9 @@ umap-learn
 # Other package versions for consistency
 ipywidgets>=7.5
 colorama>=0.3.9
+python-dateutil>=2.7.3
+pyasn1<0.5.0,>=0.4.6
+cryptography>=2.8
 
 # Submodules
 -e /code/submodules/fastText
