@@ -12,6 +12,7 @@ export N_NEIGHBOURS=5
 export MIN_DIST=0.8
 export RADIUS=1000
 export PRECISION=4
+export THRESHOLD=99
 
 cd ..
 
