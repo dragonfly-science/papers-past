@@ -1,6 +1,0 @@
-docker: mathematiguy/papers-past:1ee460f
-allows:
-  - papers-past-embeddings
-  - papers-past-starmap
-triggers:
-  - papers-past-embeddings
