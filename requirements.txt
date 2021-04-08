@@ -1,0 +1,13 @@
+ipython
+lxml
+click
+jupyter
+jupyterlab
+huggingface
+pandas
+matplotlib
+torch
+snakemake
+sentencepiece
+nltk
+pytest
