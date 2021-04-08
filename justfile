@@ -10,7 +10,7 @@ see:
     snakemake -j 1 -n -p --verbose
 
 try:
-    snakemake -j 15 -k -p --verbose
+    snakemake -j 15 -k --verbose
 
 do:
     snakemake -j 15 -p
@@ -19,7 +19,7 @@ dag:
     snakemake --dag | dot -Tpdf > dag.pdf
 
 rules:
-    snakemake --rulegraph | dot -Tpdf > dag.pdf
+    snakemake --rulegraph | dot -Tpdf > rules.pdf
 
 clean:
     rm -rf data/unzipped/*
