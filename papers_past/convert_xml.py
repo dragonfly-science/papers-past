@@ -18,9 +18,9 @@ def parse_xml(xml_file):
 
 
 @click.command()
-@click.option('--xml_dir', help='Path to xml files')
+@click.option('--xml_file', help='Path to xml files')
 @click.option('--log_level', default='INFO', help='Log level (default: INFO)')
-def main(xml_dir, log_level):
+def main(xml_file, log_level):
 
     # Set logger config
     logging.basicConfig(
@@ -29,22 +29,10 @@ def main(xml_dir, log_level):
     )
 
     captured_errors = {'file': [], 'error': []}
-    for root, dirs, files in os.walk(xml_dir):
-        for f in files:
-            if f.endswith('.xml') and f != "mets.xml":
-                fp = os.path.join(root, f)
-                try:
-                    # Extract and save text
-                    parse_xml(fp)
-                except etree.XMLSyntaxError as e:
-                    captured_errors['file'].append(fp)
-                    captured_errors['error'].append(e)
 
-    if len(captured_errors['file']) > 0:
-        print('Captured errors for the following files:')
-        for f, e in zip(captured_errors['file'], captured_errors['error']):
-            print(f, e, '\n')
-        raise RuntimeError()
+    # Extract and save text
+    parse_xml(xml_file)
+
 
 
 if __name__ == '__main__':
