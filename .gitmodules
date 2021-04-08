@@ -7,3 +7,6 @@
 [submodule "submodules/infomap"]
 	path = submodules/infomap
 	url = git@github.com:mapequation/infomap.git
+[submodule "submodules/sentencepiece"]
+	path = submodules/sentencepiece
+	url = git@github.com:google/sentencepiece.git
