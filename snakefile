@@ -23,16 +23,16 @@ rule unzip:
     input:
         'data/raw/{newspaper}_{year}.tar.gz'
     output:
-        'data/unzipped/{newspaper}/{year}/{newspaper_date}/MM_01/{article}.xml'
+        'data/unzipped/{newspaper}/{year}/.done'
     wildcard_constraints:
         year='\d+'
     priority: 1
     shell:
-        'tar -xf {input} -C data/unzipped/'
+        'tar -xf {input} -C data/unzipped/ && touch {output}'
 
 rule convert_xml:
     input:
-        'data/unzipped/{newspaper}/{year}/{newspaper_date}/MM_01/{article}.xml'
+        'data/unzipped/{newspaper}/{year}/.done'
     output:
         'data/unzipped/{newspaper}/{year}/{newspaper_date}/MM_01/{article}.txt'
     wildcard_constraints:
@@ -40,7 +40,7 @@ rule convert_xml:
         article='\d+'
     priority: 2
     shell:
-        '{run} python3 papers_past/convert_xml.py --xml_dir data/unzipped/{wildcards.newspaper}/{wildcards.year} --log_level {log_level}'
+        '{run} python3 papers_past/convert_xml.py --xml_file data/unzipped/{wildcards.newspaper}/{wildcards.year}/{wildcards.newspaper_date}/MM_01/{wildcards.article}.xml --log_level {log_level}'
 
 rule sent_tokenize:
     input:
