@@ -94,28 +94,18 @@ def list_articles(tar_files, data_path):
         )
 
 
-def get_wildcards(articles):
-
+def get_wildcards(archives):
     newspapers = []
     years = []
-    newspaper_dates = []
-    articles = []
-    pattern = re.compile(r'([A-Z]+)/([0-9]+)/([A-Z]+_[0-9]+)/MM_01/([0-9]+)\.xml')
-
-    for article in articles:
-        newspaper, year, newspaper_date, article = pattern.findall(path)[0]
+    pattern = re.compile(r'([A-Z]+)_([0-9]+)\.tar\.gz')
+    for archive in archives:
+        newspaper, year = pattern.findall(archive)[0]
         newspapers.append(newspaper)
         years.append(year)
-        newspaper_dates.append(newspaper_date)
-        articles.append(article)
-
     return dict(
         newspaper = newspapers,
-        year = years,
-        newspaper_date = newspaper_dates,
-        article = articles
+        year = years
     )
-
 
 def get_newspaper_date(path):
     p = re.compile(r'([A-Z]+_[0-9]+)/MM_01')
