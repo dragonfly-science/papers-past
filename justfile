@@ -10,7 +10,7 @@ see:
     snakemake -j 1 -n -p --verbose
 
 try:
-    snakemake -j 15 -k --verbose
+    snakemake -j 15 -k -p
 
 do:
     snakemake -j 15 -p
@@ -22,7 +22,7 @@ rules:
     snakemake --rulegraph | dot -Tpdf > rules.pdf
 
 clean:
-    rm -rf data/unzipped/*
+    rm -rf data/unzipped/* data/documents/*
 
 jupyter_password := "jupyter"
 jupyter:
