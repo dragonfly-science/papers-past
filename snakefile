@@ -44,7 +44,7 @@ rule sent_tokenize:
     input:
         'data/documents/{newspaper}/{year}/'
     output:
-        directory('data/sentences/{newspaper}/{year}')
+        directory('data/sentences/{newspaper}/{year}/')
     wildcard_constraints:
         newspaper='[A-Z]+',
         year='\d+',
@@ -52,3 +52,21 @@ rule sent_tokenize:
     priority: 3
     shell:
         '{run} python3 papers_past/sentence_tokenize.py --doc_dir {input} --out_dir {output} --log_level {log_level}'
+
+rule compile_corpus:
+    input:
+        expand('data/sentences/{newspaper}/{year}', zip, **get_wildcards(archives))
+    output:
+        'data/sentence_corpus.txt'
+    threads: 1
+    shell:
+        '\n'.join([f'find data/sentences/{newspaper}/{year} -type f | xargs cat >> data/sentence_corpus.txt'
+                   for newspaper, year in zip(*get_wildcards(archives).values())])
+
+rule sentence_piece:
+    input:
+        ''
+    output:
+        ''
+    shell:
+        'spm_train --input={input} --model_prefix=test.unigram --vocab_size=8000 --character_coverage=1.0 --model_type=unigram'
